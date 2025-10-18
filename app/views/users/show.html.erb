@@ -26,19 +26,19 @@
                     <dt class="font-medium text-gray-600 w-32">氏名:</dt>
                     <dd class="text-gray-800"><%= @user_info['name'] || @user_info[:name] %></dd>
                   </div>
-                  <% if @user_info['birth_date'] %>
+                  <% if @user_info['birth_date'].present? %>
                   <div class="flex">
                     <dt class="font-medium text-gray-600 w-32">生年月日:</dt>
                     <dd class="text-gray-800"><%= @user_info['birth_date'] %></dd>
                   </div>
                   <% end %>
-                  <% if @user_info['phone_number'] %>
+                  <% if @user_info['phone_number'].present? %>
                   <div class="flex">
                     <dt class="font-medium text-gray-600 w-32">電話番号:</dt>
                     <dd class="text-gray-800"><%= @user_info['phone_number'] %></dd>
                   </div>
                   <% end %>
-                  <% if @user_info['address'] %>
+                  <% if @user_info['address'].present? %>
                   <div class="flex">
                     <dt class="font-medium text-gray-600 w-32">住所:</dt>
                     <dd class="text-gray-800"><%= @user_info['address'] %></dd>
@@ -75,7 +75,7 @@
             <div class="mt-8">
               <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
                 <strong>SSO認証成功！</strong>
-                IdPアプリケーションから取得した情報を表示しています。
+                IdP API（/api/v1/user_info）から取得した情報を表示しています。
               </div>
             </div>
           <% else %>

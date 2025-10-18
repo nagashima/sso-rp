@@ -19,9 +19,13 @@ class SessionsController < ApplicationController
         email: auth.info.email,
         name: auth.info.name,
         access_token: auth.credentials.token,
-        id_token: auth.credentials.id_token
+        id_token: auth.credentials.id_token,
+        # raw_infoから追加のプロフィール情報を取得
+        birth_date: auth.extra&.raw_info&.birthdate,
+        phone_number: auth.extra&.raw_info&.phone_number,
+        address: auth.extra&.raw_info&.address
       }
-      
+
       session[:user_info] = user_info
       session[:logged_in_at] = Time.current.to_s  # ログイン時刻を記録
       Rails.logger.info "User info saved to session: #{user_info.inspect}"

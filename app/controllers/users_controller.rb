@@ -15,6 +15,7 @@ class UsersController < ApplicationController
       uri = URI("#{ENV['IDP_API_INTERNAL_URL']}/user_info")
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme == 'https'
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE  # 開発環境用：自己署名証明書を許可
 
       request = Net::HTTP::Get.new(uri)
       request['Authorization'] = "Bearer #{current_user['access_token']}"
@@ -24,7 +25,9 @@ class UsersController < ApplicationController
 
       case response.code
       when '200'
-        JSON.parse(response.body)
+        # IdP APIから取得したデータにセッションのトークン情報をマージ
+        api_data = JSON.parse(response.body)
+        current_user.merge(api_data)
       when '401'
         handle_access_token_expired
       else
