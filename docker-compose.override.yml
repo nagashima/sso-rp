@@ -1,7 +1,0 @@
-# SSO開発用ネットワーク設定（IdP側と共有）
-# RPはsso-networkに参加のみ（作成・削除はIdP側で管理）
-
-networks:
-  default:
-    external: true
-    name: sso-network

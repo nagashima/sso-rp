@@ -63,13 +63,9 @@ docker-compose up -d
        ▼                             ▼
 ┌─────────────────────┐    ┌─────────────────────┐
 │   IdP (sso-idp)     │    │   RP (this app)     │
-│  idp.localhost      │    │  localhost:3443     │
+│  idp.localhost      │◄───┤  localhost:3443     │
 │    (port 443)       │    │    (port 3443)      │
-└──────┬──────────────┘    └──────┬──────────────┘
-       │                          │
-       │   sso-network (Docker)   │
-       └──────────────────────────┘
-              内部通信
+└─────────────────────┘    └─────────────────────┘
 ```
 
 ### 認証フロー
@@ -77,8 +73,13 @@ docker-compose up -d
 2. IdPの認証画面にリダイレクト（`https://idp.localhost`）
 3. ユーザーがIdPでログイン・認証
 4. 認証コードを持ってRPにリダイレクト
-5. RPがトークン取得（内部通信: `idp-nginx-1:443`）
-6. ユーザー情報取得・セッション確立
+5. RPがトークン取得（外部URL経由: `https://idp.localhost`）
+6. ユーザー情報取得（`https://idp.localhost/api/v1`）・セッション確立
+
+**本番想定の構成**:
+- RPからIdPへの全通信は外部URL（`idp.localhost`）経由
+- Dockerネットワークの共有不要（別ネットワークでも動作可能）
+- `extra_hosts` でコンテナから `idp.localhost` に名前解決
 
 ---
 
@@ -175,11 +176,15 @@ docker-compose exec app bundle exec rails [command]
 # IdPが起動しているか確認
 curl -k https://idp.localhost/health/ready
 
-# sso-networkが存在するか確認
-docker network ls | grep sso-network
+# /etc/hostsにidp.localhostが設定されているか確認
+cat /etc/hosts | grep idp.localhost
 
-# sso-networkがない場合は作成
-docker network create sso-network
+# 設定されていない場合は追加
+sudo sh -c 'echo "127.0.0.1 idp.localhost" >> /etc/hosts'
+
+# RPコンテナ内から名前解決できるか確認
+docker-compose exec app getent hosts idp.localhost
+# → extra_hostsでhost-gatewayに解決されることを確認
 ```
 
 #### OAuth2エラー

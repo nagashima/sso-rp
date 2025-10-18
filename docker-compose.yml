@@ -24,6 +24,8 @@ services:
     environment:
       - RAILS_ENV=development
       - SSL_ENABLED=false  # nginx側でSSL終端
+    extra_hosts:
+      - "idp.localhost:host-gateway"  # ホストマシンのidp.localhostに接続
 
 volumes:
   rails_bundle:
