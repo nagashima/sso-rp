@@ -1,17 +1,20 @@
 class SessionsController < ApplicationController
   skip_before_action :authenticate_user!
 
+  # ログアウト処理はCSRF検証をスキップ（セッション切れ時のエラー回避）
+  skip_forgery_protection only: [:destroy]
+
   def omniauth
     # OmniAuthがリダイレクトを処理
   end
 
   def omniauth_callback
     auth = request.env['omniauth.auth']
-    
+
     Rails.logger.info "OAuth callback received"
     Rails.logger.info "Auth present: #{auth.present?}"
     Rails.logger.info "Auth data: #{auth.inspect}" if auth.present?
-    
+
     if auth.present?
       # ユーザー情報をセッションに保存
       user_info = {
@@ -30,7 +33,7 @@ class SessionsController < ApplicationController
       session[:logged_in_at] = Time.current.to_s  # ログイン時刻を記録
       Rails.logger.info "User info saved to session: #{user_info.inspect}"
       Rails.logger.info "Session after save: #{session[:user_info].inspect}"
-      
+
       redirect_to profile_path, notice: 'ログインしました'
     else
       Rails.logger.error "OAuth authentication failed - no auth data"
@@ -41,12 +44,12 @@ class SessionsController < ApplicationController
   def auth_failure
     error_type = params[:message] || 'unknown_error'
     error_details = request.env['omniauth.error'] || 'No details available'
-    
+
     Rails.logger.error "OmniAuth authentication failed: #{error_type}"
     Rails.logger.error "Error details: #{error_details.inspect}"
     Rails.logger.error "Request params: #{params.inspect}"
     Rails.logger.error "Request env omniauth: #{request.env.select { |k, v| k.to_s.include?('omniauth') }}"
-    
+
     redirect_to root_path, alert: "ログインに失敗しました: #{error_type}"
   end
 
