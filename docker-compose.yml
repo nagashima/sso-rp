@@ -25,7 +25,7 @@ services:
       - RAILS_ENV=development
       - SSL_ENABLED=false  # nginx側でSSL終端
     extra_hosts:
-      - "idp.localhost:host-gateway"  # ホストマシンのidp.localhostに接続
+      - "host.docker.internal:host-gateway"  # RPコンテナからホストOSのIdPにアクセス（Linux用、Mac/Windowsでは自動サポート）
 
 volumes:
   rails_bundle:
