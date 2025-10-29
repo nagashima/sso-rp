@@ -1,11 +1,13 @@
 services:
-  nginx:
-    image: nginx:alpine
+  https-portal:
+    image: steveltn/https-portal:1
     ports:
       - "3443:443"  # HTTPS終端
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./docker/nginx/ssl:/etc/nginx/ssl
+      - ./docker/https-portal/localhost.ssl.conf.erb:/var/lib/nginx-conf/localhost.ssl.conf.erb:ro
+    environment:
+      STAGE: 'local'  # 自己署名証明書を自動生成
+      DOMAINS: 'localhost'
     depends_on:
       - app
 

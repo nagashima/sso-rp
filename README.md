@@ -156,13 +156,13 @@ docker-compose exec app bundle exec rails [command]
 - **Ruby**: 3.2.6
 - **Rails**: 7.1.5
 - **Authentication**: OmniAuth + OpenID Connect
-- **Web Server**: nginx (HTTPS終端 + リバースプロキシ)
+- **Web Server**: https-portal (nginxベース、証明書自動管理 + HTTPS終端 + リバースプロキシ)
 
 ---
 
 ## 📖 設定ファイル
 
-- **[docker/nginx/](./docker/nginx/)** - nginx SSL設定ファイル
+- **[docker/https-portal/](./docker/https-portal/)** - https-portal設定ファイル（nginxベース）
 - **[config/initializers/omniauth.rb](./config/initializers/omniauth.rb)** - OmniAuth設定
 
 ---

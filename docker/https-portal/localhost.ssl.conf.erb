@@ -1,0 +1,33 @@
+# HTTPS設定 - localhost (RP)
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name localhost;
+
+    # https-portalが自動生成する証明書を使用
+    ssl_certificate <%= domain.chained_cert_path %>;
+    ssl_certificate_key <%= domain.key_path %>;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # セキュリティヘッダー
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # RP Rails アプリケーション (port 3000)
+    location / {
+        proxy_pass http://app:3000;
+        proxy_set_header Host localhost:3443;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Port 3443;
+        proxy_redirect off;
+
+        # バッファサイズ調整（Rails大きなヘッダー対応）
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+
+        # Cookie secureフラグを維持
+        proxy_cookie_flags ~ secure;
+    }
+}
