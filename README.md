@@ -7,12 +7,7 @@
 ### 前提条件
 1. **IdPが起動していること**
    - IdPプロジェクト（sso-idp）が起動している必要があります
-   - `https://idp.localhost` が稼働中であることを確認
-
-2. **/etc/hosts設定**
-   ```bash
-   sudo sh -c 'echo "127.0.0.1 idp.localhost" >> /etc/hosts'
-   ```
+   - `https://localhost:4443` が稼働中であることを確認
 
 ### 初回セットアップ
 
@@ -22,7 +17,7 @@ IdPプロジェクトで以下のコマンドを実行：
 cd /path/to/sso-idp
 ./scripts/register-client.sh "https://localhost:3443/auth/sso/callback" \
   --first-party \
-  --cors-origin "https://idp.localhost,https://localhost:3443"
+  --cors-origin "https://localhost:4443,https://localhost:3443"
 ```
 
 登録後、`CLIENT_ID`と`CLIENT_SECRET`が表示されます。
@@ -63,23 +58,22 @@ docker-compose up -d
        ▼                             ▼
 ┌─────────────────────┐    ┌─────────────────────┐
 │   IdP (sso-idp)     │    │   RP (this app)     │
-│  idp.localhost      │◄───┤  localhost:3443     │
-│    (port 443)       │    │    (port 3443)      │
+│  localhost:4443     │◄───┤  localhost:3443     │
 └─────────────────────┘    └─────────────────────┘
 ```
 
 ### 認証フロー
 1. ユーザーがRPの「Login with SSO」をクリック
-2. IdPの認証画面にリダイレクト（`https://idp.localhost`）
+2. IdPの認証画面にリダイレクト（`https://localhost:4443`）
 3. ユーザーがIdPでログイン・認証
 4. 認証コードを持ってRPにリダイレクト
-5. RPがトークン取得（外部URL経由: `https://idp.localhost`）
-6. ユーザー情報取得（`https://idp.localhost/api/v1`）・セッション確立
+5. RPがトークン取得（外部URL経由: `https://localhost:4443`）
+6. ユーザー情報取得（`https://localhost:4443/api/v1`）・セッション確立
 
 **本番想定の構成**:
-- RPからIdPへの全通信は外部URL（`idp.localhost`）経由
+- RPからIdPへの全通信は外部URL（`localhost:4443`）経由
 - Dockerネットワークの共有不要（別ネットワークでも動作可能）
-- `extra_hosts` でコンテナから `idp.localhost` に名前解決
+- `extra_hosts` でコンテナから `host.docker.internal` 経由でIdPに接続
 
 ---
 
@@ -139,7 +133,7 @@ docker-compose exec app bundle exec rails [command]
 ### SSOログインフロー
 1. https://localhost:3443 にアクセス
 2. "Login with SSO"ボタンをクリック
-3. IdPの認証画面（`https://idp.localhost/login`）が表示される
+3. IdPの認証画面（`https://localhost:4443/login`）が表示される
 4. IdPでログイン（メール・パスワード・認証コード）
 5. RPにリダイレクトされ、ログイン状態になる
 6. ユーザー情報が表示される
@@ -174,17 +168,11 @@ docker-compose exec app bundle exec rails [command]
 #### IdPに接続できない
 ```bash
 # IdPが起動しているか確認
-curl -k https://idp.localhost/health/ready
+curl -k https://localhost:4443/health/ready
 
-# /etc/hostsにidp.localhostが設定されているか確認
-cat /etc/hosts | grep idp.localhost
-
-# 設定されていない場合は追加
-sudo sh -c 'echo "127.0.0.1 idp.localhost" >> /etc/hosts'
-
-# RPコンテナ内から名前解決できるか確認
-docker-compose exec app getent hosts idp.localhost
-# → extra_hostsでhost-gatewayに解決されることを確認
+# RPコンテナ内からIdPに接続できるか確認
+docker-compose exec app curl -k https://host.docker.internal:4443/health/ready
+# → extra_hostsでhost-gatewayに解決され、ホストOS上のIdPに接続できることを確認
 ```
 
 #### OAuth2エラー
@@ -198,4 +186,4 @@ docker-compose exec app getent hosts idp.localhost
 
 ---
 
-**最終更新**: 2025-10-18
+**最終更新**: 2025-10-29
