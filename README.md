@@ -32,6 +32,19 @@ cp .env.local.example .env.local
 # OAUTH_CLIENT_SECRET=<取得したCLIENT_SECRET>
 ```
 
+> **⚠️ 重要: docker-compose.yml の設定確認**
+>
+> RPをDockerコンテナで動作させる場合、IdP（localhost:4443）に接続するために、`docker-compose.yml`のappサービスに以下の設定が必要です：
+>
+> ```yaml
+> services:
+>   app:
+>     extra_hosts:
+>       - "host.docker.internal:host-gateway"
+> ```
+>
+> この設定により、コンテナ内から `host.docker.internal` 経由でホストマシン上のIdPにアクセスできます。
+
 #### 3. RPの起動
 ```bash
 docker-compose up -d
