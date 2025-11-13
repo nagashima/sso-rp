@@ -10,14 +10,61 @@
           <p class="text-gray-600 mb-6">
             このアプリケーションはORY HydraとIdPアプリケーションを利用したSSO認証のデモです。
           </p>
-          
+
+          <% if params[:invite_code].present? %>
+          <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+            <strong>招待コード（URLパラメータ）:</strong>
+            <code class="bg-yellow-200 px-2 py-1 rounded font-mono ml-2"><%= params[:invite_code] %></code>
+            <p class="text-sm mt-2">
+              このコードがstateパラメータに含まれてHydraに送信されます。
+            </p>
+          </div>
+          <% end %>
+
+          <% if flash[:returned_invite_code].present? %>
+          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <strong>✅ Hydraから返ってきた招待コード:</strong>
+            <code class="bg-green-200 px-2 py-1 rounded font-mono ml-2"><%= flash[:returned_invite_code] %></code>
+            <p class="text-sm mt-2">
+              Hydraがstateパラメータを正しく保持して返してくれました！
+            </p>
+          </div>
+          <% end %>
+
           <%= form_with url: "/auth/sso", method: :post, local: true, class: "inline-block" do |f| %>
             <%= f.submit "SSO ログイン", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200" %>
           <% end %>
-          
+
+          <% if params[:invite_code].present? %>
+          <div class="mt-4">
+            <%
+              custom_state = {
+                inviteCode: params[:invite_code],
+                csrf: SecureRandom.hex(16)
+              }.to_json
+
+              oauth2_url = "#{ENV['HYDRA_PUBLIC_URL']}/oauth2/auth?" + {
+                client_id: ENV['OAUTH_CLIENT_ID'],
+                redirect_uri: "https://localhost:3443/auth/test_state/callback",
+                response_type: "code",
+                scope: "openid profile email",
+                state: custom_state
+              }.to_query
+            %>
+            <%= link_to "🧪 State Parameter Test (Direct OAuth2)", oauth2_url,
+                class: "bg-purple-500 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 inline-block" %>
+            <p class="text-xs text-gray-500 mt-2">
+              ※ OmniAuthをバイパスして直接Hydraにリクエストを送り、stateパラメータを検証します
+            </p>
+          </div>
+          <% end %>
+
           <div class="mt-6">
             <p class="text-sm text-gray-500">
               ログインボタンをクリックすると、IdPアプリケーションの認証画面にリダイレクトされます。
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+              <strong>テスト方法:</strong> URLに <code>?invite_code=abc123</code> を追加してアクセスしてください。
             </p>
           </div>
         </div>

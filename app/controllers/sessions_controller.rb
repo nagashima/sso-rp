@@ -15,6 +15,10 @@ class SessionsController < ApplicationController
     Rails.logger.info "Auth present: #{auth.present?}"
     Rails.logger.info "Auth data: #{auth.inspect}" if auth.present?
 
+    # callbackで返ってきたstateパラメータを取得（OmniAuthの場合はCSRF用ランダム文字列）
+    returned_state = params[:state]
+    Rails.logger.info "Returned state: #{returned_state.inspect}"
+
     if auth.present?
       # ユーザー情報をセッションに保存
       user_info = {
@@ -51,6 +55,38 @@ class SessionsController < ApplicationController
     Rails.logger.error "Request env omniauth: #{request.env.select { |k, v| k.to_s.include?('omniauth') }}"
 
     redirect_to root_path, alert: "ログインに失敗しました: #{error_type}"
+  end
+
+  def test_state_callback
+    # 直接OAuth2フローのcallback（OmniAuthバイパス）
+    code = params[:code]
+    returned_state = params[:state]
+
+    Rails.logger.info "=== Direct OAuth2 Test Callback ==="
+    Rails.logger.info "Code: #{code}"
+    Rails.logger.info "Returned state: #{returned_state}"
+
+    if returned_state.present?
+      begin
+        state_data = JSON.parse(returned_state)
+        invite_code = state_data['inviteCode']
+        Rails.logger.info "✅ Successfully parsed state!"
+        Rails.logger.info "Invite code: #{invite_code}"
+
+        # flashで一度だけ表示（セッションには保存しない）
+        flash[:notice] = "State parameter test successful! Invite code: #{invite_code}"
+        flash[:returned_invite_code] = invite_code
+        redirect_to root_path
+      rescue JSON::ParserError => e
+        Rails.logger.error "Failed to parse state: #{e.message}"
+        flash[:alert] = "Failed to parse state: #{e.message}"
+        redirect_to root_path
+      end
+    else
+      Rails.logger.error "No state parameter returned!"
+      flash[:alert] = "No state parameter in callback"
+      redirect_to root_path
+    end
   end
 
   def destroy

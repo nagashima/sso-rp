@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   # Root path
   root "home#index"
 
+  # Direct OAuth2 test (bypass OmniAuth for state parameter testing)
+  # NOTE: この具体的なルートを先に書かないと、:providerパラメータにマッチしてしまう
+  get '/auth/test_state/callback', to: 'sessions#test_state_callback'
+
   # Authentication routes (OmniAuth automatically handles /auth/:provider)
   get '/auth/:provider/callback', to: 'sessions#omniauth_callback'
   get '/auth/failure', to: 'sessions#auth_failure'
