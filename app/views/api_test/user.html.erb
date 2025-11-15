@@ -1,0 +1,49 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold mb-2">ユーザー情報取得 (GET /users/:id)</h1>
+      <%= link_to '← API検証メニューに戻る', api_test_path, class: "text-blue-600 hover:underline" %>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <%= form_with url: api_test_user_path, method: :post, local: true do |f| %>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">User ID:</label>
+          <div class="flex gap-2">
+            <%= text_field_tag :user_id, params[:user_id],
+                class: "flex-1 px-3 py-2 border border-gray-300 rounded-md",
+                placeholder: "12" %>
+            <%= f.submit '取得', class: "bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md cursor-pointer" %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if @request_url %>
+        <div class="mt-6 border-t pt-4">
+          <h3 class="font-semibold mb-2">▼ リクエスト情報</h3>
+          <div class="bg-gray-50 p-3 rounded text-sm">
+            <p><strong>URL:</strong> <%= @request_url %></p>
+            <p><strong>Auth:</strong> Basic (CLIENT_ID: <%= @client_id&.slice(0, 20) %>...)</p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h3 class="font-semibold mb-2">▼ レスポンス</h3>
+          <% if @error %>
+            <div class="bg-red-50 border border-red-200 p-3 rounded text-red-800">
+              <%= @error %>
+            </div>
+          <% else %>
+            <p class="mb-2">
+              <span class="font-semibold">Status:</span>
+              <span class="<%= @status_code.to_i == 200 ? 'text-green-600' : 'text-red-600' %>">
+                <%= @status_code %> <%= @status_code.to_i == 200 ? 'OK' : 'Error' %>
+              </span>
+            </p>
+            <pre class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto text-sm"><%= @response_body %></pre>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -59,7 +59,7 @@
           </div>
           <% end %>
 
-          <div class="mt-6">
+          <div class="mt-4">
             <p class="text-sm text-gray-500">
               ログインボタンをクリックすると、IdPアプリケーションの認証画面にリダイレクトされます。
             </p>
@@ -67,6 +67,13 @@
               <strong>テスト方法:</strong> URLに <code>?invite_code=abc123</code> を追加してアクセスしてください。
             </p>
           </div>
+
+          <div class="mt-6 border-t pt-4">
+            <%= link_to '🔧 IdP API検証ツール', api_test_path,
+                class: "text-blue-600 hover:text-blue-800 font-medium" %>
+            <p class="text-xs text-gray-500 mt-1">開発用: IdP APIの動作確認</p>
+          </div>
+
         </div>
       </div>
     </div>

@@ -19,4 +19,11 @@ Rails.application.routes.draw do
 
   # User info display
   get '/profile', to: 'users#show', as: :profile
+
+  # API Test (Development)
+  get '/api_test', to: 'api_test#index'
+  get '/api_test/user', to: 'api_test#user'
+  post '/api_test/user', to: 'api_test#get_user'
+  get '/api_test/search', to: 'api_test#search'
+  post '/api_test/search', to: 'api_test#search_users'
 end
