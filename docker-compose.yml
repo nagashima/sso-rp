@@ -21,7 +21,6 @@ services:
       - .:/app
       - rails_bundle:/usr/local/bundle
     env_file:
-      - .env
       - .env.local
     environment:
       - RAILS_ENV=development

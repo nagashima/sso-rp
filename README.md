@@ -6,7 +6,7 @@
 
 ### 前提条件
 1. **IdPが起動していること**
-   - IdPプロジェクト（sso-idp）が起動している必要があります
+   - IdPプロジェクトが起動している必要があります
    - `https://localhost:4443` が稼働中であることを確認
 
 ### 初回セットアップ
@@ -14,10 +14,11 @@
 #### 1. IdP側でOAuth2クライアント登録
 IdPプロジェクトで以下のコマンドを実行：
 ```bash
-cd /path/to/sso-idp
-./scripts/register-client.sh "https://localhost:3443/auth/sso/callback" \
+cd /path/to/{idp}
+./scripts/register-rp-dev.sh "検証用RP" "https://localhost:3443/auth/sso/callback" \
   --first-party \
-  --cors-origin "https://localhost:4443,https://localhost:3443"
+  --cors-origin "https://localhost:4443,https://localhost:3443" \
+  --signin-url "https://localhost:3443/auth/sso"
 ```
 
 登録後、`CLIENT_ID`と`CLIENT_SECRET`が表示されます。
@@ -52,7 +53,7 @@ docker-compose up -d
 
 ### 動作確認
 - **RP画面**: https://localhost:3443
-- **SSOログイン**: https://localhost:3443 → "Login with SSO"ボタンをクリック
+- **SSOログイン**: https://localhost:3443 → "SSO ログイン"ボタンをクリック
 
 ---
 
@@ -70,13 +71,13 @@ docker-compose up -d
        │                             │
        ▼                             ▼
 ┌─────────────────────┐    ┌─────────────────────┐
-│   IdP (sso-idp)     │    │   RP (this app)     │
+│   IdP (idp)         │    │   RP (this app)     │
 │  localhost:4443     │◄───┤  localhost:3443     │
 └─────────────────────┘    └─────────────────────┘
 ```
 
 ### 認証フロー
-1. ユーザーがRPの「Login with SSO」をクリック
+1. ユーザーがRPの「SSO ログイン」をクリック
 2. IdPの認証画面にリダイレクト（`https://localhost:4443`）
 3. ユーザーがIdPでログイン・認証
 4. 認証コードを持ってRPにリダイレクト
@@ -145,15 +146,15 @@ docker-compose exec app bundle exec rails [command]
 
 ### SSOログインフロー
 1. https://localhost:3443 にアクセス
-2. "Login with SSO"ボタンをクリック
+2. "SSO ログイン"ボタンをクリック
 3. IdPの認証画面（`https://localhost:4443/login`）が表示される
 4. IdPでログイン（メール・パスワード・認証コード）
 5. RPにリダイレクトされ、ログイン状態になる
 6. ユーザー情報が表示される
 
 ### ログアウト
-1. RPの"Logout"ボタンをクリック
-2. IdPのセッションもクリアされる（グローバルログアウト）
+1. RPの"ログアウト"ボタンをクリック
+2. RPのログアウトのみ、IdPのログイン状態は維持される
 
 ---
 
@@ -178,16 +179,6 @@ docker-compose exec app bundle exec rails [command]
 
 ### よくある問題
 
-#### IdPに接続できない
-```bash
-# IdPが起動しているか確認
-curl -k https://localhost:4443/health/ready
-
-# RPコンテナ内からIdPに接続できるか確認
-docker-compose exec app curl -k https://host.docker.internal:4443/health/ready
-# → extra_hostsでhost-gatewayに解決され、ホストOS上のIdPに接続できることを確認
-```
-
 #### OAuth2エラー
 - IdPでクライアントが正しく登録されているか確認
 - `.env.local`のCLIENT_IDとCLIENT_SECRETが正しいか確認
@@ -198,5 +189,3 @@ docker-compose exec app curl -k https://host.docker.internal:4443/health/ready
 - 「詳細設定」→「安全でないサイトに進む」で進んでください
 
 ---
-
-**最終更新**: 2025-10-29
